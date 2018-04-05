@@ -3,3 +3,4 @@ osdp:
   # details
   linux: amazon   # So we can develop AWS Lambda with same python version
   username: jknott    # one of the siblings
+  project: redbull
