@@ -32,6 +32,7 @@ import logging
 import os.path
 import shutil
 
+# Removed encryption. Need to remove modules that are not needed.
 
 
 
@@ -40,7 +41,7 @@ __author__ = "James Knott (@Ghettolabs)"
 __copyright__ = "Copyright 2018 James Knott"
 __credits__ = ["James Knott"]
 __license__ = "Apache License, 2.0"
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 __maintainer__ = "James Knott"
 __email__ = "devops@ghettolabs.io"
 __status__ = "Development"
@@ -61,7 +62,7 @@ def setup_logging():
 
     return logger
 
-yaml = YAML
+yaml = YAML # Need to fix this so its global and not scattered all over.
 
 class MyProgressPrinter(RemoteProgress):
             def update(self, op_code, cur_count, max_count=None, message=''):
@@ -77,7 +78,7 @@ class OSDPBase(object):
         self.my_file = Path(r"osdp/keys/private.bin")
         self.secret_code = ''
         self.encoded_key = ''
-        self.linux = ['ubuntu', 'centos', 'debian', 'amazon', 'dcos-vagrant', 'xenial']
+        self.linux = ['ubuntu', 'centos', 'debian', 'amazon', 'dcos-vagrant', 'xenial', 'docker']
         self.logger = setup_logging()
     def init(self):
         try:
