@@ -29,7 +29,7 @@
 ## TODO:
 - Make yaml = YAML() global so it is not scattered all over the place.
 - Move start stop and destroy to one method.
-- Add custom exceptions for all file open operations.
+- Add custom exceptions and assert. Basic testing.
 - Add Dropbox sync
 - clean up all os file system checks
 - General refactor of all code to make pretty and perform better.
