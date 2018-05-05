@@ -34,3 +34,5 @@
 - clean up all os file system checks
 - General refactor of all code to make pretty and perform better.
 - Add state machine so that the application always knows what has been started.
+- Make plugin system so users can add Vagrantfiles or profiles.
+- Make it so the application can automatically pull from ansible-galaxy
