@@ -25,3 +25,12 @@
 ## Developers
 - Please use developer branch
 - Create a virtualenv for your development and testing then move your code over to a clean folder to push up your changes.
+
+## TODO:
+- Make yaml = YAML() global so it is not scattered all over the place.
+- Move start stop and destroy to one method.
+- Add custom exceptions for all file open operations.
+- Add Dropbox sync
+- clean up all os file system checks
+- General refactor of all code to make pretty and perform better.
+- Add state machine so that the application always knows what has been started.
