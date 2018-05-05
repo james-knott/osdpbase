@@ -137,7 +137,7 @@ class OSDPBase(object):
                 final_directory = os.path.join(current_directory, file_to_open)
                 if os.path.exists(final_directory):
                     self.logger.info("A project with that name already exists!")
-                    #self.backup()
+                    self.backup()
                     try:
                         shutil.rmtree(final_directory, onerror=onerror)
                         self.logger.info("The folder has been remvoed.!")
