@@ -3,12 +3,7 @@
 This module contains the base class for OSDP
 (OSDPBase).
 
-Things to do:
-        TODO: Move start stop and destroy to one method.
-        Removed: Move encryp and decrypt to separate methods.
-        Done: Add custom exceptions for all file open operations.
-        Done: s3 - Add Dropbox sync
-        TODO: clean up all os file system checks
+
 """
 
 
