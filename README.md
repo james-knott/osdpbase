@@ -36,3 +36,4 @@
 - Add state machine so that the application always knows what has been started.
 - Make plugin system so users can add Vagrantfiles or profiles.
 - Make it so the application can automatically pull from ansible-galaxy
+- Create a mode that creates an environment in the background like virtualenv but at a vagrant scale.
