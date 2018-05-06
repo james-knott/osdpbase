@@ -3,12 +3,7 @@
 This module contains the base class for OSDP
 (OSDPBase).
 
-Things to do:
-        Move start stop and destroy to one method.
-        Move encryp and decrypt to separate methods.
-        Add custom exceptions for all file open operations.
-        Add Dropbox sync
-        clean up all os file system checks
+
 """
 
 import osdpbase
