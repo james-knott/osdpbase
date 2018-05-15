@@ -39,6 +39,7 @@ __maintainer__ = "James Knott"
 __email__ = "devops@ghettolabs.io"
 __status__ = "Development"
 
+LOG_FILENAME = '/tmp/logging_osdp.out'
 
 def setup_logging():
     logger = logging.getLogger()
@@ -48,7 +49,7 @@ def setup_logging():
     FORMAT = "[%(levelname)s %(asctime)s %(filename)s:%(lineno)s - %(funcName)21s() ] %(message)s"
     h.setFormatter(logging.Formatter(FORMAT))
     logger.addHandler(h)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     return logger
 
 yaml = YAML # Need to fix this so its global and not scattered all over.
@@ -59,7 +60,7 @@ class MyProgressPrinter(RemoteProgress):
 
 
 
-class OSDPBase(object):
+class OSDPBase():
     def __init__(self):
         self.current_directory = os.getcwd()
         self.final_directory = os.path.join(self.current_directory, r"osdp")
@@ -130,7 +131,6 @@ class OSDPBase(object):
                         self.logger.info("The folder has been remvoed.!")
                     except:
                         self.logger.info("The folder could  not be remvoed.!")
-                    #os.makedirs(final_directory)
                 else:
                     os.makedirs(final_directory)
                 if dataMap['osdp']['linux'] not in self.linux:
@@ -269,7 +269,7 @@ class OSDPBase(object):
         #client = docker.from_env()
         #container = client.containers.run(lambci/lambda:myimage,'my_module.my_handler',detach=True)
         client = docker.from_env()
-        client.login(username="buildmystartup", password="Saturday2020")
+        client.login(username=dataMap['osdp']['dockerhubusername'], password=dataMap['osdp']['dockerhubpassword'])
         client.images.build(path=path, tag="buildmystartup/ghettolabs:" + imagetag)
         for line in client.images.push(repository="buildmystartup/ghettolabs", stream=True):
             print(line)
