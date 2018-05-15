@@ -6,5 +6,6 @@ osdp:
   project: company
   platform: docker # Currently supported docker and vagrant
   runtime: python3.6
-  dockerhubusername: 
-  dockerhubpassword: 
+  dockerhubusername: buildmystartup
+  dockerhubpassword: mypassword
+  imagename: buildmystartup/ghettolabs
