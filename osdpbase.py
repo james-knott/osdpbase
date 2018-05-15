@@ -17,10 +17,6 @@ import os
 from pathlib import Path
 import argparse
 import vagrant
-from Crypto.PublicKey import RSA
-from Crypto import Random
-from Crypto.Random import get_random_bytes
-from Crypto.Cipher import AES, PKCS1_OAEP
 import json
 import errno
 from subprocess import check_output
@@ -31,11 +27,8 @@ import datetime
 import logging
 import os.path
 import shutil
-
-# Removed encryption. Need to remove modules that are not needed.
-
-
-
+import docker
+import dockerpty
 
 __author__ = "James Knott (@Ghettolabs)"
 __copyright__ = "Copyright 2018 James Knott"
@@ -51,15 +44,11 @@ def setup_logging():
     logger = logging.getLogger()
     for h in logger.handlers:
       logger.removeHandler(h)
-
     h = logging.StreamHandler(sys.stdout)
-
-    # use whatever format you want here
     FORMAT = "[%(levelname)s %(asctime)s %(filename)s:%(lineno)s - %(funcName)21s() ] %(message)s"
     h.setFormatter(logging.Formatter(FORMAT))
     logger.addHandler(h)
     logger.setLevel(logging.INFO)
-
     return logger
 
 yaml = YAML # Need to fix this so its global and not scattered all over.
@@ -78,15 +67,13 @@ class OSDPBase(object):
         self.my_file = Path(r"osdp/keys/private.bin")
         self.secret_code = ''
         self.encoded_key = ''
-        self.linux = ['ubuntu', 'centos', 'debian', 'amazon', 'dcos-vagrant', 'xenial', 'docker']
+        self.linux = ['ubuntu', 'centos', 'debian', 'amazon', 'dcos-vagrant', 'xenial', 'docker', 'amazonlinux', 'docker-lambda']
         self.logger = setup_logging()
     def init(self):
         try:
             Repo.clone_from('https://github.com/james-knott/osdp.git', self.final_directory , branch="master", progress=MyProgressPrinter())
             self.logger.info("Downloaded the settings.yml file. Go to osdp/template.yml to customize your environment!")
         except git.exc.GitCommandError as e:
-            #z = e
-            #print(z)
             self.logger.info("Could not connect to github.com .!")
             if os.path.isfile('osdp/template.yml'):
                 self.logger.info("Found the settings.yml file. It has already been downloaded!")
@@ -129,8 +116,12 @@ class OSDPBase(object):
                 dataMap = yaml.load(f)
                 current_directory = os.getcwd()
                 data_folder = Path("osdp")
-                file_to_open = data_folder / "projects" / dataMap['osdp']['project'] / "vagrant"
-                final_directory = os.path.join(current_directory, file_to_open)
+                if dataMap['osdp']['platform'] == 'vagrant':
+                    file_to_open = data_folder / "projects" / dataMap['osdp']['project'] / "vagrant"
+                    final_directory = os.path.join(current_directory, file_to_open)
+                elif dataMap['osdp']['platform'] == 'docker':
+                    file_to_open = data_folder / "projects" / dataMap['osdp']['project'] / "docker"
+                    final_directory = os.path.join(current_directory, file_to_open)
                 if os.path.exists(final_directory):
                     self.logger.info("A project with that name already exists!")
                     self.backup()
@@ -149,6 +140,8 @@ class OSDPBase(object):
                 url = "https://github.com/james-knott/" + dataMap['osdp']['linux'] + ".git"
                 self.logger.info("Downloading project files!")
                 Repo.clone_from(url, final_directory , branch="master")
+                if dataMap['osdp']['platform'] == 'docker':
+                    self.setup_docker(path=final_directory, dataMap=dataMap)
                 # TODO: sed -i "s/^\(boxName\s*=\s*\).*\$/\1ahead/" Vagrantfile
         else:
             self.logger.info("Could not find settings file. Downloading new copy. Please edit then run osdp --new again!")
@@ -169,28 +162,81 @@ class OSDPBase(object):
 
 
     def start(self, projectname):
-        #with open(r"osdp\template.yml") as f:
-            #      dataMap = yaml.load(f)
+        with open(r"osdp/template.yml") as f:
+            yaml = YAML()
+            dataMap = yaml.load(f)
             current_directory = os.getcwd()
             data_folder = Path("osdp")
-            file_to_open = data_folder / "projects" / projectname / "vagrant"
+            file_to_open = data_folder / "projects" / dataMap['osdp']['project'] / dataMap['osdp']['platform']
             final_directory = os.path.join(current_directory, file_to_open)
             if not os.path.exists(final_directory):
-                os.makedirs(final_directory)
-            print(final_directory)
-            vagrant_folder = Path(final_directory)
-            print(vagrant_folder)
-            v = vagrant.Vagrant(vagrant_folder, quiet_stdout=False)
-            try:
-                v.up()
-            except Exception as e:
-                pass
-                #self.logger.error(traceback.format_exc())
-            os.chdir(vagrant_folder)
-            cmdCommand = "vagrant port"   #specify your cmd command
-            process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
-            output, error = process.communicate()
-            print(output)
+                print("This should have already been created")
+                exit()
+                #os.makedirs(final_directory)
+            if dataMap['osdp']['platform'] == 'vagrant':
+                vagrant_folder = Path(final_directory)
+                v = vagrant.Vagrant(vagrant_folder, quiet_stdout=False)
+                try:
+                    v.up()
+                except Exception as e:
+                    pass
+                    #self.logger.error(traceback.format_exc())
+                os.chdir(vagrant_folder)
+                cmdCommand = "vagrant port"   #specify your cmd command
+                process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
+                output, error = process.communicate()
+                print(output)
+            elif dataMap['osdp']['platform'] == 'docker':
+                print("Ths platform is docker and we will connect to the image")
+                print(final_directory)
+                os.chdir(final_directory)
+                retval = os.getcwd()
+                print(retval)
+                #host_port = 80
+                IMG_SRC = "buildmystartup/ghettolabs:python3.6"
+                #DEFAULT_CONTAINER_PORT = 50000
+                #client = docker.from_env()
+                #docker_client = docker.APIClient(base_url="unix://var/run/docker.sock")
+                #host_config = docker_client.create_host_config(port_bindings={DEFAULT_CONTAINER_PORT: host_port})
+                #container = docker_client.create_container(IMG_SRC, "/bin/bash", stdin_open=True, detach=True, tty=True, name="ghettolabs-python")
+                #dockerpty.start(client, container)
+                #docker_client.start(container=container.get('Id'))
+                #version = docker_client.version()
+                #docker_client.attach(container)
+                client = docker.Client()
+                client.pull("buildmystartup/ghettolabs:python3.6")
+                #container = client.create_container(image='buildmystartup/ghettolabs:python3.6',stdin_open=True,tty=True,command='/bin/bash',)
+                container_id = client.create_container('buildmystartup/ghettolabs:python3.6',stdin_open=True,tty=True,command='/bin/bash', volumes=['/home/user/environments/osdp/osdp/projects/ghettolabs/docker'],host_config=client.create_host_config \
+                (binds=['/home/user/environments/osdp/osdp/projects/ghettolabs/docker:/var/task',]))
+                dockerpty.start(client, container_id)
+                #wrapped_cmd = "bash"
+                #exec_id = docker_client.exec_create(container.get('Id'), wrapped_cmd, stderr=False, tty=True)  # only stdout
+                #command = "./bash_docker.sh"
+                #process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+                #output, error = process.communicate()
+                #process.wait()
+
+                #print("working but cannot get interactive" process.returncode)
+                #try:
+                #    exec_output = docker_client.exec_start(exec_id, detach=True, socket=True, tty=True, stream=True)
+                #except docker.errors.APIError as e:
+                #    raise exceptions.ConnectionFailed(e)
+                #print(exec_output)
+                #print('connected to container "%s"' % exec_id)
+                #print('type %s. to disconnect' % self.escape)
+                #detail = docker_client.inspect_container(container)
+                #if bool(detail["State"]["Running"]):
+                #    print(detail['Id'])
+
+                #exec_info = docker_client.exec_inspect(exec_id)
+                #client = docker.from_env()
+                #client.login(username="buildmystartup", password="Saturday2020")
+                #container = client.containers.run('buildmystartup/ghettolabs:python3.6','/bin/bash', detach=True)
+                #container.logs()
+                #apiclient = docker.APIClient(base_url='unix://var/run/docker.sock')
+                #apiclient = docker.APIClient(base_url='tcp://0.0.0.0:2375')
+                #apiclient.version()
+                #apiclient.attach('buildmystartup/ghettolabs:python3.6')
 
     def stop(self, projectname):
         with open(r"osdp/template.yml") as f:
@@ -252,6 +298,25 @@ class OSDPBase(object):
             vagrant_folder = Path(final_directory)
             v = vagrant.Vagrant(vagrant_folder, quiet_stdout=False)
             v.destroy()
+
+    def setup_docker(self, path, dataMap):
+        print(path)
+        username = dataMap['osdp']['dockerhubusername']
+        password = dataMap['osdp']['dockerhubpassword']
+        imagetag = dataMap['osdp']['runtime']
+        os.chdir(path)
+        # Test on Python 3.6 with a custom file named my_module.py containing a my_handler function
+        #docker run --rm -v "$PWD":/var/task lambci/lambda:python3.6 my_module.my_handler
+        #client = docker.from_env()
+        #container = client.containers.run(lambci/lambda:myimage,'my_module.my_handler',detach=True)
+        client = docker.from_env()
+        client.login(username="buildmystartup", password="Saturday2020")
+        client.images.build(path=path, tag="buildmystartup/ghettolabs:" + imagetag)
+        for line in client.images.push(repository="buildmystartup/ghettolabs", stream=True):
+            print(line)
+
+
+
 
 
 

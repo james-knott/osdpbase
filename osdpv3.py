@@ -80,7 +80,7 @@ if __name__ == "__main__":
         test.destroy(projectname=project)
     elif result.start:
         project = result.start
-        logger.info("We are starting your vagrant box now!")
+        logger.info("We are starting your development environment now!")
         test.start(projectname=project)
     elif result.stop:
         project = result.stop
