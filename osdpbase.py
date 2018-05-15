@@ -188,55 +188,14 @@ class OSDPBase(object):
                 print(output)
             elif dataMap['osdp']['platform'] == 'docker':
                 print("Ths platform is docker and we will connect to the image")
-                print(final_directory)
                 os.chdir(final_directory)
                 retval = os.getcwd()
-                print(retval)
-                #host_port = 80
                 IMG_SRC = "buildmystartup/ghettolabs:python3.6"
-                #DEFAULT_CONTAINER_PORT = 50000
-                #client = docker.from_env()
-                #docker_client = docker.APIClient(base_url="unix://var/run/docker.sock")
-                #host_config = docker_client.create_host_config(port_bindings={DEFAULT_CONTAINER_PORT: host_port})
-                #container = docker_client.create_container(IMG_SRC, "/bin/bash", stdin_open=True, detach=True, tty=True, name="ghettolabs-python")
-                #dockerpty.start(client, container)
-                #docker_client.start(container=container.get('Id'))
-                #version = docker_client.version()
-                #docker_client.attach(container)
                 client = docker.Client()
                 client.pull("buildmystartup/ghettolabs:python3.6")
-                #container = client.create_container(image='buildmystartup/ghettolabs:python3.6',stdin_open=True,tty=True,command='/bin/bash',)
                 container_id = client.create_container('buildmystartup/ghettolabs:python3.6',stdin_open=True,tty=True,command='/bin/bash', volumes=['/home/user/environments/osdp/osdp/projects/ghettolabs/docker'],host_config=client.create_host_config \
                 (binds=['/home/user/environments/osdp/osdp/projects/ghettolabs/docker:/var/task',]))
                 dockerpty.start(client, container_id)
-                #wrapped_cmd = "bash"
-                #exec_id = docker_client.exec_create(container.get('Id'), wrapped_cmd, stderr=False, tty=True)  # only stdout
-                #command = "./bash_docker.sh"
-                #process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-                #output, error = process.communicate()
-                #process.wait()
-
-                #print("working but cannot get interactive" process.returncode)
-                #try:
-                #    exec_output = docker_client.exec_start(exec_id, detach=True, socket=True, tty=True, stream=True)
-                #except docker.errors.APIError as e:
-                #    raise exceptions.ConnectionFailed(e)
-                #print(exec_output)
-                #print('connected to container "%s"' % exec_id)
-                #print('type %s. to disconnect' % self.escape)
-                #detail = docker_client.inspect_container(container)
-                #if bool(detail["State"]["Running"]):
-                #    print(detail['Id'])
-
-                #exec_info = docker_client.exec_inspect(exec_id)
-                #client = docker.from_env()
-                #client.login(username="buildmystartup", password="Saturday2020")
-                #container = client.containers.run('buildmystartup/ghettolabs:python3.6','/bin/bash', detach=True)
-                #container.logs()
-                #apiclient = docker.APIClient(base_url='unix://var/run/docker.sock')
-                #apiclient = docker.APIClient(base_url='tcp://0.0.0.0:2375')
-                #apiclient.version()
-                #apiclient.attach('buildmystartup/ghettolabs:python3.6')
 
     def stop(self, projectname):
         with open(r"osdp/template.yml") as f:
