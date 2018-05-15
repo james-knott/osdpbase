@@ -10,6 +10,7 @@
 - Python 3.x
 - Install requirements_osdp.txt
 - amazon aws account (For S3 backups) 
+- sudo apt-get install python3-distutils for docker to work.
 
 
 ## How to use
