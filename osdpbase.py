@@ -59,7 +59,7 @@ class MyProgressPrinter(RemoteProgress):
 
 
 
-class OSDPBase(object):
+class OSDPBase():
     def __init__(self):
         self.current_directory = os.getcwd()
         self.final_directory = os.path.join(self.current_directory, r"osdp")
@@ -269,7 +269,7 @@ class OSDPBase(object):
         #client = docker.from_env()
         #container = client.containers.run(lambci/lambda:myimage,'my_module.my_handler',detach=True)
         client = docker.from_env()
-        client.login(username="buildmystartup", password="Saturday2020")
+        client.login(username=dataMap['osdp']['dockerhubusername'], password=dataMap['osdp']['dockerhubpassword'])
         client.images.build(path=path, tag="buildmystartup/ghettolabs:" + imagetag)
         for line in client.images.push(repository="buildmystartup/ghettolabs", stream=True):
             print(line)
