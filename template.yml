@@ -9,3 +9,5 @@ osdp:
   dockerhubusername: buildmystartup
   dockerhubpassword: mypassword
   imagename: buildmystartup/ghettolabs
+  pushto: ghettolabs/python
+  dockerdeveloperimage: buildmystartup/ghettolabs:python3.6
