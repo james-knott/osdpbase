@@ -39,7 +39,6 @@ __maintainer__ = "James Knott"
 __email__ = "devops@ghettolabs.io"
 __status__ = "Development"
 
-LOG_FILENAME = '/tmp/logging_osdp.out'
 
 def setup_logging():
     logger = logging.getLogger()
@@ -49,7 +48,7 @@ def setup_logging():
     FORMAT = "[%(levelname)s %(asctime)s %(filename)s:%(lineno)s - %(funcName)21s() ] %(message)s"
     h.setFormatter(logging.Formatter(FORMAT))
     logger.addHandler(h)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     return logger
 
 yaml = YAML # Need to fix this so its global and not scattered all over.
@@ -60,7 +59,7 @@ class MyProgressPrinter(RemoteProgress):
 
 
 
-class OSDPBase():
+class OSDPBase(object):
     def __init__(self):
         self.current_directory = os.getcwd()
         self.final_directory = os.path.join(self.current_directory, r"osdp")
@@ -131,6 +130,7 @@ class OSDPBase():
                         self.logger.info("The folder has been remvoed.!")
                     except:
                         self.logger.info("The folder could  not be remvoed.!")
+                    #os.makedirs(final_directory)
                 else:
                     os.makedirs(final_directory)
                 if dataMap['osdp']['linux'] not in self.linux:
@@ -190,9 +190,14 @@ class OSDPBase():
                 print("Ths platform is docker and we will connect to the image")
                 os.chdir(final_directory)
                 retval = os.getcwd()
-                IMG_SRC = "buildmystartup/ghettolabs:python3.6"
+                IMG_SRC = dataMap['osdp']['dockerdeveloperimage']
                 client = docker.Client()
-                client.pull("buildmystartup/ghettolabs:python3.6")
+                client.login(username=dataMap['osdp']['dockerhubusername'], password=dataMap['osdp']['dockerhubpassword'], registry="https://index.docker.io/v1/")
+                client.pull(IMG_SRC)
+                client.tag(image=dataMap['osdp']['dockerdeveloperimage'], repository=dataMap['osdp']['pushto'],tag=dataMap['osdp']['runtime'])
+                #client.tag(image=dataMap['osdp']['imagename'] + ":" + dataMap['osdp']['runtime'], repository=dataMap['osdp']['pushto'],tag=dataMap['osdp']['runtime'])
+                #client.tag(image="buildmystartup/ghettolabs:python3.6", repository="ghettolabs/python",tag="python3.6")
+                response = [line for line in client.push(dataMap['osdp']['pushto'] + ":" + dataMap['osdp']['runtime'], stream=True)]
                 container_id = client.create_container('buildmystartup/ghettolabs:python3.6',stdin_open=True,tty=True,command='/bin/bash', volumes=['/home/user/environments/osdp/osdp/projects/ghettolabs/docker'],host_config=client.create_host_config \
                 (binds=['/home/user/environments/osdp/osdp/projects/ghettolabs/docker:/var/task',]))
                 dockerpty.start(client, container_id)
@@ -269,7 +274,7 @@ class OSDPBase():
         #client = docker.from_env()
         #container = client.containers.run(lambci/lambda:myimage,'my_module.my_handler',detach=True)
         client = docker.from_env()
-        client.login(username=dataMap['osdp']['dockerhubusername'], password=dataMap['osdp']['dockerhubpassword'])
+        client.login(username="buildmystartup", password="Saturday2020?")
         client.images.build(path=path, tag="buildmystartup/ghettolabs:" + imagetag)
         for line in client.images.push(repository="buildmystartup/ghettolabs", stream=True):
             print(line)
