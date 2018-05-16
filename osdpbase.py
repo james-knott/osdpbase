@@ -141,7 +141,12 @@ class OSDPBase(object):
                 self.logger.info("Downloading project files!")
                 Repo.clone_from(url, final_directory , branch="master")
                 if dataMap['osdp']['platform'] == 'docker':
-                    self.setup_docker(path=final_directory, dataMap=dataMap)
+                    IMG_SRC = dataMap['osdp']['dockerdeveloperimage']
+                    client = docker.Client()
+                    client.login(username=dataMap['osdp']['dockerhubusername'], password=dataMap['osdp']['dockerhubpassword'], registry="https://index.docker.io/v1/")
+                    client.pull(IMG_SRC)
+                    client.tag(image=dataMap['osdp']['dockerdeveloperimage'], repository=dataMap['osdp']['pushto'],tag=dataMap['osdp']['runtime'])
+                    #self.setup_docker(path=final_directory, dataMap=dataMap)
                 # TODO: sed -i "s/^\(boxName\s*=\s*\).*\$/\1ahead/" Vagrantfile
         else:
             self.logger.info("Could not find settings file. Downloading new copy. Please edit then run osdp --new again!")
@@ -195,8 +200,6 @@ class OSDPBase(object):
                 client.login(username=dataMap['osdp']['dockerhubusername'], password=dataMap['osdp']['dockerhubpassword'], registry="https://index.docker.io/v1/")
                 client.pull(IMG_SRC)
                 client.tag(image=dataMap['osdp']['dockerdeveloperimage'], repository=dataMap['osdp']['pushto'],tag=dataMap['osdp']['runtime'])
-                #client.tag(image=dataMap['osdp']['imagename'] + ":" + dataMap['osdp']['runtime'], repository=dataMap['osdp']['pushto'],tag=dataMap['osdp']['runtime'])
-                #client.tag(image="buildmystartup/ghettolabs:python3.6", repository="ghettolabs/python",tag="python3.6")
                 response = [line for line in client.push(dataMap['osdp']['pushto'] + ":" + dataMap['osdp']['runtime'], stream=True)]
                 container_id = client.create_container('buildmystartup/ghettolabs:python3.6',stdin_open=True,tty=True,command='/bin/bash', volumes=['/home/user/environments/osdp/osdp/projects/ghettolabs/docker'],host_config=client.create_host_config \
                 (binds=['/home/user/environments/osdp/osdp/projects/ghettolabs/docker:/var/task',]))
@@ -262,22 +265,6 @@ class OSDPBase(object):
             vagrant_folder = Path(final_directory)
             v = vagrant.Vagrant(vagrant_folder, quiet_stdout=False)
             v.destroy()
-
-    def setup_docker(self, path, dataMap):
-        print(path)
-        username = dataMap['osdp']['dockerhubusername']
-        password = dataMap['osdp']['dockerhubpassword']
-        imagetag = dataMap['osdp']['runtime']
-        os.chdir(path)
-        # Test on Python 3.6 with a custom file named my_module.py containing a my_handler function
-        #docker run --rm -v "$PWD":/var/task lambci/lambda:python3.6 my_module.my_handler
-        #client = docker.from_env()
-        #container = client.containers.run(lambci/lambda:myimage,'my_module.my_handler',detach=True)
-        client = docker.from_env()
-        client.login(username="buildmystartup", password="Saturday2020?")
-        client.images.build(path=path, tag="buildmystartup/ghettolabs:" + imagetag)
-        for line in client.images.push(repository="buildmystartup/ghettolabs", stream=True):
-            print(line)
 
 
 
