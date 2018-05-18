@@ -28,7 +28,7 @@
 - Create a virtualenv for your development and testing then move your code over to a clean folder to push up your changes.
 
 ## TODO:
-- Make yaml = YAML() global so it is not scattered all over the place.
+- Make yaml = YAML() scope global so it is not scattered all over the place.
 - Move start stop and destroy to one method.
 - Add custom exceptions and assert. Basic testing.
 - Add Dropbox sync
