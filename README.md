@@ -3,6 +3,7 @@
 - YAML config file. 
 - Library of working Vagrantfiles
 - Automatic project backup to S3
+- Manages Docker environments
 
 ## Requirements
 - virtualbox 5.x
