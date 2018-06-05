@@ -11,19 +11,11 @@ import sys
 from ruamel.yaml import YAML
 import argparse
 
-
-
-
-
-
-
-
-
 __author__ = "James Knott (@Ghettolabs)"
 __copyright__ = "Copyright 2018 James Knott"
 __credits__ = ["James Knott"]
 __license__ = "Apache License, 2.0"
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 __maintainer__ = "James Knott"
 __email__ = "devops@ghettolabs.io"
 __status__ = "Development"
@@ -85,11 +77,3 @@ if __name__ == "__main__":
         project = result.stop
         logger.info("We are stopping your vagrant box now!")
         test.stop(projectname=project)
-
-
-
-
-
-
-
-
