@@ -137,7 +137,6 @@ class OSDPBase(object):
                 self.logger.info("The folder has been remvoed.!")
             except:
                 self.logger.info("The folder could  not be remvoed.!")
-            #os.makedirs(final_directory)
         else:
             os.makedirs(final_directory)
         if dataMap['osdp']['linux'] not in self.linux:
@@ -153,8 +152,6 @@ class OSDPBase(object):
             client.login(username=dataMap['osdp']['dockerhubusername'], password=dataMap['osdp']['dockerhubpassword'], registry="https://index.docker.io/v1/")
             client.pull(IMG_SRC)
             client.tag(image=dataMap['osdp']['dockerdeveloperimage'], repository=dataMap['osdp']['pushto'],tag=dataMap['osdp']['runtime'])
-            #self.setup_docker(path=final_directory, dataMap=dataMap)
-        # TODO: sed -i "s/^\(boxName\s*=\s*\).*\$/\1ahead/" Vagrantfile
 
     def zipfolder(self):
         dt = datetime.datetime.now()
@@ -178,7 +175,6 @@ class OSDPBase(object):
         if not os.path.exists(final_directory):
             print("This should have already been created")
             exit()
-            #os.makedirs(final_directory)
         if dataMap['osdp']['platform'] == 'vagrant':
             vagrant_folder = Path(final_directory)
             v = vagrant.Vagrant(vagrant_folder, quiet_stdout=False)
@@ -186,9 +182,8 @@ class OSDPBase(object):
                 v.up()
             except Exception as e:
                 pass
-                #self.logger.error(traceback.format_exc())
             os.chdir(vagrant_folder)
-            cmdCommand = "vagrant port"   #specify your cmd command
+            cmdCommand = "vagrant port"
             process = subprocess.Popen(cmdCommand.split(), stdout=subprocess.PIPE)
             output, error = process.communicate()
             print(output)
