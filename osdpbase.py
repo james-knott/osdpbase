@@ -134,9 +134,9 @@ class OSDPBase(object):
             self.backup()
             try:
                 shutil.rmtree(final_directory, onerror=onerror)
-                self.logger.info("The folder has been remvoed.!")
+                self.logger.info("The folder has been removed.!")
             except:
-                self.logger.info("The folder could  not be remvoed.!")
+                self.logger.info("The folder could  not be removed.!")
         else:
             os.makedirs(final_directory)
         if dataMap['osdp']['linux'] not in self.linux:
