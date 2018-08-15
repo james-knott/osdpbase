@@ -1,7 +1,5 @@
 """
-Open Source Development Platform Base Class.
-This module contains the base class for OSDP
-(OSDPBase).
+Open Source Development Platform.
 
 """
 
@@ -26,15 +24,12 @@ def setup_logging():
     logger = logging.getLogger()
     for h in logger.handlers:
       logger.removeHandler(h)
-
     h = logging.StreamHandler(sys.stdout)
-
     # use whatever format you want here
     FORMAT = "[%(levelname)s %(asctime)s %(filename)s:%(lineno)s - %(funcName)21s() ] %(message)s"
     h.setFormatter(logging.Formatter(FORMAT))
     logger.addHandler(h)
     logger.setLevel(logging.INFO)
-
     return logger
 
 
